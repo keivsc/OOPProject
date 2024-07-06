@@ -16,7 +16,7 @@ public class Posts {
     private Table headersTable;
     private Table contentTable;
     private Table commentsTable;
-    private Map<Integer, Map<Integer, Post>> cachedPosts = new HashMap<>();
+    private Map<Integer, Post> cachedPosts = new HashMap<>();
 
     private static List<String> parseStringToList(String input) {
         input = input.substring(1, input.length() - 1);
@@ -52,11 +52,6 @@ public class Posts {
         try {
             List<Post> posts = new ArrayList<>();
 
-            // Check cache first
-            if (cachedPosts.containsKey(page)) {
-                cachedPosts.get(page).values().forEach(posts::add);
-                return posts;
-            }
 
             // Query the database
             ResultSet rs = this.headersTable.runQuery(
@@ -67,11 +62,8 @@ public class Posts {
                             "OFFSET " + (page - 1) * 10
             );
 
-            // Process the result set
-            cachedPosts.put(page, new HashMap<>());
             while (rs.next()) {
                 int postId = rs.getInt("postID");
-                System.out.println(postId);
                 String postTitle = rs.getString("postTitle");
                 int postAuthor = rs.getInt("authorID");
                 int postEpoch = rs.getInt("postEpoch");
@@ -79,15 +71,10 @@ public class Posts {
                 int dislikes = rs.getInt("dislikes");
                 Post currentPost = new Post(postId, postTitle, postAuthor, postEpoch, likes, dislikes);
                 posts.add(currentPost);
-                cachedPosts.get(page).put(postId, currentPost);
+                cachedPosts.put(postId, currentPost);
             }
 
             // Maintain cache size
-            if (cachedPosts.size() > 3) {
-                int oldestPage = Collections.min(cachedPosts.keySet());
-                cachedPosts.remove(oldestPage);
-            }
-
             return posts;
         } catch (Exception e) {
             e.printStackTrace(); // Consider logging this instead of printing
@@ -97,10 +84,7 @@ public class Posts {
 
     public Post getPost(int postID){
         refreshDB();
-        Post currentPost = null;
-        for (int i=1; i<=cachedPosts.size(); i++){
-            currentPost = cachedPosts.get(i).get(postID);
-        }
+        Post currentPost = cachedPosts.get(postID);
 
         try {
             if (currentPost == null) {
@@ -155,16 +139,16 @@ public class Posts {
         postHeaders.addItem("dislikes", 0);
         Value postContent = new Value();
         postContent.addItem("postID", "AutoIncrement");
-        postContent.addItem("content", Content);
+        postContent.addItem("content", Content.replace("'", "''"));
         postContent.addItem("likedUsers", "[0]");
         postContent.addItem("dislikedUsers", "[0]");
         try {
-            this.headersTable.addItem(postHeaders, false);
             this.contentTable.addItem(postContent, false);
+            this.headersTable.addItem(postHeaders, false);
             this.refreshDB();
             return 0;
         }catch (Errors.DatabaseException e) {
-            System.out.println(e.getMessage());
+            e.printStackTrace();
             return 1;
         }
     }

@@ -2,6 +2,7 @@ package gui;
 
 import gui.pages.Home;
 import gui.pages.Login;
+import gui.pages.NewPost;
 import server.*;
 
 import javax.swing.*;
@@ -55,19 +56,24 @@ public class MainPanel extends JPanel {
         if (user == null) {
             logButton = new JButton("Login");
             logButton.addActionListener(e -> {
-                parentFrame.setContentPane(new Login(parentFrame, data));
+                parentFrame.setContentPane(new MainPanel(parentFrame, data, new Login(parentFrame, data)));
                 parentFrame.revalidate();
                 parentFrame.repaint();
             });
         } else {
             if(user.isAdmin){
                 newPostButton = new JButton("New Post");
+                newPostButton.addActionListener(e -> {
+                    parentFrame.setContentPane(new MainPanel(parentFrame, data, new NewPost(parentFrame, data)));
+                    parentFrame.revalidate();
+                    parentFrame.repaint();
+                });
             }
             logButton = new JButton("Logout");
             logButton.addActionListener(e -> {
                 int response = JOptionPane.showConfirmDialog(null, "Are you sure you want to logout of " + data.getUser().getUsername() + "?", "Logout?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
                 if (response == JOptionPane.YES_OPTION) {
-                    parentFrame.setContentPane(new Login(parentFrame, data));
+                    parentFrame.setContentPane(new MainPanel(parentFrame, data, new Login(parentFrame, data)));
                     parentFrame.revalidate();
                     parentFrame.repaint();
                 }
