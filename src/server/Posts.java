@@ -10,59 +10,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-class Post{
-    private int postId;
-    private String postTitle;
-    private String postContent = null;
-    private String postDate;
-    private String postAuthor;
-    private boolean loaded;
-    private List<String> likedUsers = null;
-    private List<String> dislikedUsers = null;
 
-    public Post(int postID, String postTitle, String postAuthor, int postEpoch) {
-        this.postId = postID;
-        this.postTitle = postTitle;
-        this.postAuthor = postAuthor;
-        LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochSecond(postEpoch), ZoneId.systemDefault());
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-        this.postDate = dateTime.format(formatter);
-        this.loaded = false;
-    }
-
-    public void LoadPost(String content, List<String> likedUsers, List<String> dislikedUsers){
-        this.loaded = true;
-        this.postContent = content;
-        this.likedUsers = likedUsers;
-        this.dislikedUsers = dislikedUsers;
-    }
-
-    public int getPostId() {
-        return postId;
-    }
-    public String getPostTitle() {
-        return postTitle;
-    }
-    public String getPostContent() {
-        return postContent;
-    }
-    public String getPostDate() {
-        return postDate;
-    }
-    public String getPostAuthor() {
-        return postAuthor;
-    }
-    public boolean isLoaded() {
-        return loaded;
-    }
-    public List<String> getLikedUsers() {
-        return likedUsers;
-    }
-    public List<String> getDislikedUsers() {
-        return dislikedUsers;
-    }
-
-}
 public class Posts {
     private Database db;
     private Table headersTable;
@@ -95,48 +43,54 @@ public class Posts {
             this.contentTable = this.db.connectTable("PostData");
             this.commentsTable = this.db.connectTable("PostComments");
         }catch(Exception e){
-
+            throw new RuntimeException(e);
         }
     }
 
-    private List<Post> browseTopPosts(int page){
+    public List<Post> browseTopPosts(int page) {
         refreshDB();
         try {
             List<Post> posts = new ArrayList<>();
-            if (cachedPosts.containsKey(page)){
-                cachedPosts.get(page).forEach((postID, post)->{
-                    posts.add(post);
-                });
+
+            // Check cache first
+            if (cachedPosts.containsKey(page)) {
+                cachedPosts.get(page).values().forEach(posts::add);
                 return posts;
             }
 
-            ResultSet rs = this.headersTable.runQuery("SELECT *, (CAST(likes AS FLOAT) / dislikes) AS rating\n" +
-                    "FROM PostsHeaders\n" +
-                    "WHERE dislikes > 0\n" +
-                    "ORDER BY rating DESC\n" +
-                    "LIMIT 10\n" +
-                    "OFFSET "+(page-1)*10);
-            ResultSetMetaData rsmd = rs.getMetaData();
-            int columnCount = rsmd.getColumnCount();
+            // Query the database
+            ResultSet rs = this.headersTable.runQuery(
+                    "SELECT *, (CAST(likes AS FLOAT) / dislikes) AS rating " +
+                            "FROM PostsHeaders " +
+                            "ORDER BY rating DESC " +
+                            "LIMIT 10 " +
+                            "OFFSET " + (page - 1) * 10
+            );
+
+            // Process the result set
             cachedPosts.put(page, new HashMap<>());
-            while (rs.next()){
-                for(int i = 1; i <= columnCount; i++){
-                    int postId = rs.getInt("postID");
-                    String postTitle = rs.getString("postTitle");
-                    String postAuthor = rs.getString("authorID");
-                    int postEpoch = rs.getInt("epochDate");
-                    Post currentPost = new Post(postId, postTitle, postAuthor, postEpoch);
-                    posts.add(currentPost);
-                    cachedPosts.get(page).put(postId, currentPost);
-                }
+            while (rs.next()) {
+                int postId = rs.getInt("postID");
+                System.out.println(postId);
+                String postTitle = rs.getString("postTitle");
+                int postAuthor = rs.getInt("authorID");
+                int postEpoch = rs.getInt("postEpoch");
+                int likes = rs.getInt("likes");
+                int dislikes = rs.getInt("dislikes");
+                Post currentPost = new Post(postId, postTitle, postAuthor, postEpoch, likes, dislikes);
+                posts.add(currentPost);
+                cachedPosts.get(page).put(postId, currentPost);
             }
 
+            // Maintain cache size
             if (cachedPosts.size() > 3) {
                 int oldestPage = Collections.min(cachedPosts.keySet());
                 cachedPosts.remove(oldestPage);
             }
+
             return posts;
-        }catch(Exception e){
+        } catch (Exception e) {
+            e.printStackTrace(); // Consider logging this instead of printing
             return new ArrayList<>();
         }
     }
@@ -155,7 +109,7 @@ public class Posts {
                     return currentPost;
                 }
                 Value postResult = postSearch.getFirst();
-                currentPost = new Post((Integer) postResult.get("postID"), (String)postResult.get("postTitle"), (String)postResult.get("authorID"), (Integer)postResult.get("postEpoch"));
+                currentPost = new Post((Integer) postResult.get("postID"), (String)postResult.get("postTitle"), (Integer)postResult.get("authorID"), (Integer)postResult.get("postEpoch"), 0, 0);
             }
             List<Value> postList = this.contentTable.getItems("postID=" + postID);
             Value postData = postList.getFirst();
@@ -166,9 +120,32 @@ public class Posts {
         }
 
     }
+    
+    public List<Post> searchPosts(String query, int page){
+        refreshDB();
+        List<Post> posts = new ArrayList<>();
+        try{
+            ResultSet rs = this.headersTable.runQuery("SELECT * FROM PostsHeaders WHERE column_name LIKE '"+query+"' LIMIT 10 OFFSET"+(page-1)*10+";");
+            ResultSetMetaData rsmd = rs.getMetaData();
+            int columnCount = rsmd.getColumnCount();
+            while (rs.next()){
+                int postId = rs.getInt("postID");
+                String postTitle = rs.getString("postTitle");
+                int postAuthor = rs.getInt("authorID");
+                int postEpoch = rs.getInt("postEpoch");
+                int likes = rs.getInt("likes");
+                int dislikes = rs.getInt("dislikes");
+                Post currentPost = new Post(postId, postTitle, postAuthor, postEpoch, likes, dislikes);
+                posts.add(currentPost);
+            }
+            return posts;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public int newPost(int authorID, String title, String Content){
-        int epochTime = (int)(Instant.now().getEpochSecond()/1000);
+        int epochTime = (int)(Instant.now().getEpochSecond());
         Value postHeaders = new Value();
         postHeaders.addItem("postID", "AutoIncrement");
         postHeaders.addItem("authorID", authorID);

@@ -36,7 +36,7 @@ public class Comments {
     public Comments(){
         Utils utils = new Utils();
         try{
-            this.db = new Database("Content.db");
+            this.db = new Database("Comments.db");
             this.commentsTable = db.createTable("PostComments", new String[]{"commentID TEXT PRIMARY KEY", "content TEXT NOT NULL", "authorID TEXT NOT NULL", "postID INTEGER NOT NULL", "commentEpoch INTEGER NOT NULL"});
         } catch (Errors.DatabaseException e) {
             throw new RuntimeException(e);
