@@ -1,5 +1,3 @@
-package gui;
-
 import gui.pages.Login;
 import server.*;
 
@@ -23,7 +21,7 @@ public class ClimateActionProgram extends JFrame {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             Data data = new Data(new Users(), new Posts(), new Comments());
-            ClimateActionProgram frame = new ClimateActionProgram(data);
+            new ClimateActionProgram(data);
         });
     }
 }

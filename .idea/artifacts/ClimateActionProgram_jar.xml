@@ -1,6 +1,6 @@
 <component name="ArtifactManager">
-  <artifact type="jar" name="OOPProject:jar">
-    <output-path>$PROJECT_DIR$/out/artifacts/OOPProject_jar</output-path>
+  <artifact type="jar" name="ClimateActionProgram:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/ClimateActionProgram_jar</output-path>
     <root id="archive" name="OOPProject.jar">
       <element id="module-output" name="OOPProject" />
       <element id="extracted-dir" path="$PROJECT_DIR$/SQLite Java.jar" path-in-jar="/" />
