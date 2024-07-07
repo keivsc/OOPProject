@@ -1,5 +1,6 @@
 package gui.pages;
 
+import server.Comments;
 import server.Data;
 import server.Posts;
 import server.Users;
@@ -12,6 +13,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.function.Supplier;
 
 public class CreateAccount extends JPanel {
     private Pattern pattern = Pattern.compile("^[\\w-.]+@([\\w-]+\\.)+[\\w-]{2,4}$");
@@ -109,10 +111,12 @@ public class CreateAccount extends JPanel {
             }
         });
 
+        Supplier<JPanel> loginPanelSupplier = () -> new Login(parentFrame, data);
+
         backButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                parentFrame.setContentPane(new Login(parentFrame, data));
+                parentFrame.setContentPane(loginPanelSupplier.get());
                 parentFrame.revalidate();
                 parentFrame.repaint();
             }
@@ -137,7 +141,7 @@ public class CreateAccount extends JPanel {
 
     public static void main(String args[]) {
         SwingUtilities.invokeLater(() -> {
-            Data data = new Data(new Users(), new Posts());
+            Data data = new Data(new Users(), new Posts(), new Comments());
             JFrame frame = new JFrame("Climate Action Program");
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.setSize(600, 400);

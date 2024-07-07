@@ -1,5 +1,6 @@
 package server;
 import com.keivsc.SQLiteJava.*;
+import server.types.User;
 
 import java.util.List;
 import java.util.Objects;
@@ -25,6 +26,19 @@ public class Users {
             this.database.close();
             this.database = new Database("Server.db");
             this.tb = this.database.connectTable("Users");
+        }catch(Errors.DatabaseException e){
+            throw new RuntimeException(e);
+        }
+    }
+
+    public List<Integer> getUserPosts(int id){
+        return getUser(id).getPosts();
+    }
+
+    public void newPost(int authorID, String post){
+        refreshDB();
+        try{
+            this.tb.editItem("id="+authorID, new Value(){{addItem("posts", post);}}, false);
         }catch(Errors.DatabaseException e){
             throw new RuntimeException(e);
         }
@@ -60,6 +74,20 @@ public class Users {
         }
         return 0;
     };
+
+    public User getUser(int id){
+        refreshDB();
+        try{
+            List<Value> user = this.tb.getItems("id="+id);
+            if(user.isEmpty()){
+                return null;
+            }
+            Value userValue = user.getFirst();
+            return new User((String) userValue.get("email"), (String) userValue.get("username"), (Integer) userValue.get("clearance"), (Integer) userValue.get("id"), (String) userValue.get("posts"));
+        } catch (Errors.TableException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public User authorize(String email, String password){
         refreshDB();

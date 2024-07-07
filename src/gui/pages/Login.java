@@ -2,9 +2,11 @@ package gui.pages;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.function.Supplier;
 
 import gui.MainPanel;
 import server.*;
+import server.types.User;
 
 public class Login extends JPanel {
 
@@ -63,6 +65,20 @@ public class Login extends JPanel {
         JButton loginButton = new JButton("Login");
         add(loginButton, gbc);
 
+        gbc.gridy++;
+        gbc.gridx = 0;
+        JButton guestButton = new JButton("Continue as guest");
+        add(guestButton, gbc);
+        Supplier<JPanel> homePanelSupplier = () -> new Home(parentFrame, data);
+        guestButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                parentFrame.setContentPane(new MainPanel(parentFrame, data, homePanelSupplier.get()));
+                parentFrame.revalidate();
+                parentFrame.repaint();
+            }
+        });
+
         loginButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -75,9 +91,10 @@ public class Login extends JPanel {
                 }
                 User authorizedUser = data.Users().authorize(username, password);
                 if (authorizedUser != null) {
+                    Supplier<JPanel> homePanelSupplier = () -> new Home(parentFrame, data);
                     JOptionPane.showMessageDialog(null, "You have successfully logged in!");
                     data.setUser(authorizedUser);
-                    parentFrame.setContentPane(new MainPanel(parentFrame, data, new Home(parentFrame, data)));
+                    parentFrame.setContentPane(new MainPanel(parentFrame, data, homePanelSupplier.get()));
                     parentFrame.revalidate();
                     parentFrame.repaint();
                 } else {
@@ -111,7 +128,7 @@ public class Login extends JPanel {
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            Data data = new Data(new Users(), new Posts());
+            Data data = new Data(new Users(), new Posts(), new Comments());
             JFrame frame = new JFrame("Climate Action Program");
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.setSize(600, 400);

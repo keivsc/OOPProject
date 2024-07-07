@@ -1,15 +1,18 @@
 package gui.pages;
 
 import gui.MainPanel;
+import server.Comments;
 import server.Data;
 import server.Posts;
 import server.Users;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.function.Supplier;
 
 public class NewPost extends JPanel {
     public NewPost(JFrame parentFrame, Data data){
+        setName("New Post");
         setLayout(new BorderLayout());
         setBackground(Color.GRAY);
 
@@ -75,7 +78,8 @@ public class NewPost extends JPanel {
             }else {
                 JOptionPane.showMessageDialog(parentFrame, "Post submitted!\nTitle: " + title);
             }
-            parentFrame.setContentPane(new MainPanel(parentFrame, data, new Home(parentFrame, data)));
+            Supplier<JPanel> homePanelSupplier = () -> new Home(parentFrame, data);
+            parentFrame.setContentPane(new MainPanel(parentFrame, data, homePanelSupplier.get()));
             parentFrame.revalidate();
             parentFrame.repaint();
 
@@ -85,7 +89,7 @@ public class NewPost extends JPanel {
     }
     public static void main(String args[]){
         SwingUtilities.invokeLater(() -> {
-            Data data = new Data(new Users(), new Posts());
+            Data data = new Data(new Users(), new Posts(), new Comments());
             JFrame frame = new JFrame("Climate Action Program");
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.setSize(600, 400);

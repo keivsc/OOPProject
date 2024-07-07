@@ -1,4 +1,4 @@
-package server;
+package server.types;
 
 import java.util.Arrays;
 import java.util.List;
@@ -21,12 +21,12 @@ public class User{
         String trimmedInput = posts.substring(1, posts.length() - 1);
 
         // Split the string by commas and trim whitespace
+        System.out.println(posts);
         this.postIDs = Arrays.stream(trimmedInput.split(","))
                 .map(String::trim)
                 .filter(s -> !s.isEmpty())
                 .map(Integer::parseInt)
                 .toList();
-
     }
 
     public int getId() {
