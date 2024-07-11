@@ -376,7 +376,6 @@ public class PostViewer extends JPanel {
 
         commentPanel.add(topPanel, BorderLayout.NORTH);
         if (data.getUser().isAdmin) {
-            Supplier<JPanel> postRefresh = ()-> new MainPanel(parentFrame, data, new PostViewer(parentFrame, data, post));
             JButton deleteCommentButton = new JButton("Delete Comment");
             deleteCommentButton.addActionListener(new ActionListener() {
                 @Override
@@ -384,6 +383,7 @@ public class PostViewer extends JPanel {
                     int response = JOptionPane.showConfirmDialog(null, "Are you sure you want to delete this comment?", "Delete comment?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
                     if (response == JOptionPane.NO_OPTION) {return;}
                     data.Comments().deleteComment(post.getPostId(), comment.getId());
+                    Supplier<JPanel> postRefresh = ()-> new MainPanel(parentFrame, data, new PostViewer(parentFrame, data, post));
                     parentFrame.setContentPane(postRefresh.get());
                     parentFrame.revalidate();
                     parentFrame.repaint();
