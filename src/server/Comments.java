@@ -65,14 +65,21 @@ public class Comments {
         }
     }
 
-    public int removeComment(int postID, int id) {
+    public void DropTable(int postID)  {
+        try {
+            getCommentsTable(postID).runCommand("DROP TABLE IF EXISTS post_" + postID);
+        }catch(SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    public void deleteComment(int postID, int id) {
         try {
             refreshDB();
-            getCommentsTable(postID).deleteItem("id=" + id);
-            return 0;
-        } catch (Errors.TableException e) {
+            getCommentsTable(postID).runCommand("DELETE FROM post_"+postID+" WHERE id="+id);
+            refreshDB();
+        } catch (SQLException e) {
             e.printStackTrace();
-            return 1;
         }
     }
 
@@ -95,14 +102,7 @@ public class Comments {
     public int getLastID(int postID){
         try {
             ResultSet rs = getCommentsTable(postID).runQuery("SELECT MAX(id) AS lastId FROM post_" + postID);
-            while (rs.next()){
-                return rs.getInt("lastId");
-            }
-            return 0;
-        } catch (Errors.QueryException e) {
-            return 0;
-        } catch (Errors.TableException e) {
-            return 0;
+            return rs.getInt("lastId");
         } catch (SQLException e) {
             return 0;
         }

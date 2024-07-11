@@ -2,6 +2,7 @@ package server;
 import com.keivsc.SQLiteJava.*;
 import server.types.User;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -40,6 +41,18 @@ public class Users {
         try{
             this.tb.editItem("id="+authorID, new Value(){{addItem("posts", post);}}, false);
         }catch(Errors.DatabaseException e){
+            System.out.println(e.getMessage());
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void deletePost(int userID, int postID){
+        try {
+            List<Integer> newPosts = new ArrayList<>(this.getUserPosts(userID));
+            newPosts.remove((Integer) postID);
+            this.tb.editItem("id="+userID, new Value(){{addItem("posts", newPosts.toString().replace(" ", ""));}}, false);
+            refreshDB();
+        } catch (Errors.TableException e) {
             throw new RuntimeException(e);
         }
     }

@@ -149,6 +149,7 @@ public class MainPanel extends JPanel {
         button.addActionListener(e -> {
             int response = JOptionPane.showConfirmDialog(null, "Are you sure you want to logout of " + user.getUsername() + "?", "Logout?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
             if (response == JOptionPane.YES_OPTION) {
+                data.setUser(null);
                 parentFrame.setContentPane(new Login(parentFrame, data));
                 parentFrame.revalidate();
                 parentFrame.repaint();

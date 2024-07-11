@@ -12,6 +12,8 @@ import server.types.User;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.time.Instant;
@@ -28,8 +30,10 @@ public class PostViewer extends JPanel {
     private int currentPage = 1;
     private final int COMMENTS_PER_PAGE = 5;
     private final List<Comment> comments;
+    JFrame parentFrame;
 
     public PostViewer(JFrame parentFrame, Data data, Post post) {
+        this.parentFrame = parentFrame;
         this.data = data;
         this.post = data.Posts().getPost(post.getPostId());
         this.user = data.getUser();
@@ -45,7 +49,24 @@ public class PostViewer extends JPanel {
         topPanel.add(createInfoPanel(), BorderLayout.CENTER);
         topPanel.add(createTopLeftPanel(parentFrame), BorderLayout.WEST);
         topPanel.add(createButtonPanel("▲", "like", "▼", "dislike"), BorderLayout.EAST);
-
+        if (data.getUser().isAdmin) {
+            Supplier<JPanel> homePanelSupplier = () -> new Home(parentFrame, data);
+            JButton deletePostButton = new JButton("Delete Post");
+            deletePostButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    int response = JOptionPane.showConfirmDialog(null, "Are you sure you want to delete this post?", "Delete Post?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                    if (response == JOptionPane.NO_OPTION) {return;}
+                    data.Posts().deletePost(post.getPostId());
+                    data.Users().deletePost(user.getId(), post.getPostId());
+                    data.Comments().DropTable(post.getPostId());
+                    parentFrame.setContentPane(new MainPanel(parentFrame, data, homePanelSupplier.get()));
+                    parentFrame.revalidate();
+                    parentFrame.repaint();
+                }
+            });
+            topPanel.add(deletePostButton, BorderLayout.SOUTH);
+        }
         add(topPanel, BorderLayout.NORTH);
         add(mainContentPanel, BorderLayout.CENTER);
     }
@@ -158,7 +179,7 @@ public class PostViewer extends JPanel {
         mainContentPanel.add(createTitledPanel("Content", createContentPanel(), Color.BLACK), gbc);
 
         gbc.gridy++;
-        mainContentPanel.add(createTitledPanel("Comments", createCommentsPanelWithLabel(), Color.WHITE), gbc);
+        mainContentPanel.add(createTitledPanel("Comments", createCommentsPanel(), Color.WHITE), gbc);
 
         gbc.gridy++;
         gbc.weighty = 0.0;
@@ -178,7 +199,7 @@ public class PostViewer extends JPanel {
         return titledBorder;
     }
 
-    private JPanel createCommentsPanelWithLabel() {
+    private JPanel createCommentsPanel() {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(Color.GRAY);
         commentsPanel.setLayout(new BoxLayout(commentsPanel, BoxLayout.Y_AXIS));
@@ -289,7 +310,7 @@ public class PostViewer extends JPanel {
         commentInputPanel.setBackground(Color.GRAY);
         commentInputPanel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
         if (user == null) {
-            commentInputPanel.add(createLabel("You need to be logged in to post a comment!"));
+            commentInputPanel.add(new JLabel("You need to be logged in to post a comment!"){{setForeground(Color.WHITE);}});
             return commentInputPanel;
         }
         JTextArea commentInputText = new JTextArea(5, 30);
@@ -344,10 +365,33 @@ public class PostViewer extends JPanel {
 
         JLabel commentDateLabel = new JLabel(comment.getPostDate());
         commentDateLabel.setForeground(Color.WHITE);
-        topPanel.add(commentDateLabel, BorderLayout.EAST);
+
+
+        JPanel rightPanel = new JPanel();
+        rightPanel.setLayout(new BorderLayout());
+        rightPanel.setBackground(Color.GRAY);
+        rightPanel.add(commentDateLabel, BorderLayout.NORTH);
+
+        // Add the rightPanel to the EAST of the topPanel
 
         commentPanel.add(topPanel, BorderLayout.NORTH);
-
+        if (data.getUser().isAdmin) {
+            Supplier<JPanel> postRefresh = ()-> new MainPanel(parentFrame, data, new PostViewer(parentFrame, data, post));
+            JButton deleteCommentButton = new JButton("Delete Comment");
+            deleteCommentButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    int response = JOptionPane.showConfirmDialog(null, "Are you sure you want to delete this comment?", "Delete comment?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                    if (response == JOptionPane.NO_OPTION) {return;}
+                    data.Comments().deleteComment(post.getPostId(), comment.getId());
+                    parentFrame.setContentPane(postRefresh.get());
+                    parentFrame.revalidate();
+                    parentFrame.repaint();
+                }
+            });
+            rightPanel.add(deleteCommentButton, BorderLayout.SOUTH);
+        }
+        topPanel.add(rightPanel, BorderLayout.EAST);
         JTextArea commentContentArea = new JTextArea(comment.getComment());
         commentContentArea.setForeground(Color.WHITE);
         commentContentArea.setBackground(Color.GRAY);
@@ -359,11 +403,6 @@ public class PostViewer extends JPanel {
         return commentPanel;
     }
 
-    private JLabel createLabel(String text) {
-        JLabel label = new JLabel(text);
-        label.setForeground(Color.WHITE);
-        return label;
-    }
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {

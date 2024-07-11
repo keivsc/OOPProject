@@ -16,7 +16,6 @@ public class Posts {
     private Users users;
     private Table headersTable;
     private Table contentTable;
-    private Table commentsTable;
     private Map<Integer, Post> cachedPosts = new HashMap<>();
 
     public Posts() {
@@ -37,13 +36,6 @@ public class Posts {
                     "likedUsers TEXT NOT NULL",
                     "dislikedUsers TEXT NOT NULL"
             });
-            this.commentsTable = this.db.createTable("PostComments", new String[]{
-                    "commentID INTEGER PRIMARY KEY",
-                    "content TEXT NOT NULL",
-                    "authorID TEXT NOT NULL",
-                    "postID INTEGER NOT NULL",
-                    "commentEpoch INTEGER NOT NULL"
-            });
         } catch (Errors.DatabaseException e) {
             throw new RuntimeException(e);
         }
@@ -55,7 +47,6 @@ public class Posts {
             this.db = new Database("Content.db");
             this.headersTable = this.db.connectTable("PostsHeaders");
             this.contentTable = this.db.connectTable("PostData");
-            this.commentsTable = this.db.connectTable("PostComments");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -234,6 +225,18 @@ public class Posts {
             this.refreshDB();
         } catch (Errors.TableException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public int deletePost(int postID) {
+        try{
+            this.headersTable.deleteItem("postID="+postID);
+            this.contentTable.deleteItem("postID="+postID);
+            refreshDB();
+            return 0;
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            return 1;
         }
     }
 
