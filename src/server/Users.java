@@ -32,14 +32,17 @@ public class Users {
         }
     }
 
-    public List<Integer> getUserPosts(int id){
+    public List<Integer> getPosts(int id){
         return getUser(id).getPosts();
     }
 
-    public void newPost(int authorID, String post){
+    public void newPost(int authorID, int PostID){
         refreshDB();
         try{
-            this.tb.editItem("id="+authorID, new Value(){{addItem("posts", post);}}, false);
+            List<Integer> postIDs = new ArrayList<>(getPosts(authorID)); // Ensure postIDs is mutable
+            postIDs.add(PostID);
+            String postIDsString = postIDs.toString().replace(" ", ""); // Format the list as a string without spaces
+            this.tb.editItem("id="+authorID, new Value(){{addItem("posts", postIDsString);}}, false);
         }catch(Errors.DatabaseException e){
             System.out.println(e.getMessage());
             throw new RuntimeException(e);
@@ -48,7 +51,7 @@ public class Users {
 
     public void deletePost(int userID, int postID){
         try {
-            List<Integer> newPosts = new ArrayList<>(this.getUserPosts(userID));
+            List<Integer> newPosts = new ArrayList<>(this.getPosts(userID));
             newPosts.remove((Integer) postID);
             this.tb.editItem("id="+userID, new Value(){{addItem("posts", newPosts.toString().replace(" ", ""));}}, false);
             refreshDB();

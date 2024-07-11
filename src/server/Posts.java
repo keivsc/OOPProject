@@ -148,11 +148,7 @@ public class Posts {
             this.refreshDB();
 
             User user = this.users.getUser(authorID);
-            List<Integer> postIDs = new ArrayList<>(user.getPosts()); // Ensure postIDs is mutable
-            postIDs.add(getLastID(authorID));
-            String postIDsString = postIDs.toString().replace(" ", ""); // Format the list as a string without spaces
-
-            this.users.newPost(authorID, postIDsString);
+            this.users.newPost(authorID, getLastID(authorID));
             return 0;
         } catch (Errors.DatabaseException e) {
             e.printStackTrace();

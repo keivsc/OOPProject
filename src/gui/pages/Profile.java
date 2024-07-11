@@ -167,7 +167,7 @@ public class Profile extends JPanel {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.FIRST_LINE_START;  // Ensure alignment to the top
 
-        userPosts = data.Users().getUserPosts(user.getId());
+        userPosts = data.Users().getPosts(user.getId());
 
         if (!userPosts.isEmpty()) {
             JLabel postText = new JLabel("Your Posts"){{setFont(new Font("Arial", Font.BOLD, 15));}};
