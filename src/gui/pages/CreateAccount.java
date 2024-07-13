@@ -101,9 +101,13 @@ public class CreateAccount extends JPanel {
                         JOptionPane.showMessageDialog(null, "Please enter a valid email address");
                         return;
                     }
-                    if (data.Users().newUser(username, email, password, authCode) == 1) {
-                        JOptionPane.showMessageDialog(null, "Account with this email already exists");
-                    } else {
+                    int NewUser = data.Users().newUser(username, email, password, authCode);
+                    if (NewUser == 1) {
+                        JOptionPane.showMessageDialog(null, "Account with this email already exists!");
+                    } else if(NewUser == 2){
+                        JOptionPane.showMessageDialog(null, "Username "+username+" is taken!");
+                    }
+                    else {
                         JOptionPane.showMessageDialog(null, "Account created successfully");
                         backButton.doClick(0);
                     }

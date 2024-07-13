@@ -67,9 +67,13 @@ public class Users {
             clearance = 1;
         }
         try {
-            List<Value> userCheck = this.tb.getItems("email='" + email + "'");
-            if(!userCheck.isEmpty()){
+            List<Value> emailCheck = this.tb.getItems("email='" + email + "'");
+            if(!emailCheck.isEmpty()){
                 return 1;
+            }
+            List<Value> userCheck = this.tb.getItems("username='" + username + "'");
+            if(!userCheck.isEmpty()){
+                return 2;
             }
         }catch(Errors.DatabaseException e){
             throw new RuntimeException(e);
@@ -77,7 +81,7 @@ public class Users {
 
         Value user = new Value();
         user.addItem("id", "AutoIncrement");
-        user.addItem("email", email);
+        user.addItem("email", email.toLowerCase());
         user.addItem("username", username);
         user.addItem("password", this.utils.hashText(password+email));
         user.addItem("clearance", clearance);
@@ -108,7 +112,7 @@ public class Users {
     public User authorize(String email, String password){
         refreshDB();
         try {
-            List<Value> user = this.tb.getItems("email = '" + email + "'AND password='" + this.utils.hashText(password+email) + "'");
+            List<Value> user = this.tb.getItems("email = '" + email.toLowerCase() + "'AND password='" + this.utils.hashText(password+email) + "'");
             if (user.isEmpty()){
                 return null;
             }
@@ -144,13 +148,5 @@ public class Users {
             throw new RuntimeException(e);
         }
     }
-
-    public static void main(String[] args){
-        Users users = new Users();
-        users.newUser("Adwin Chee Hansen", "adwin.hansen@gmail.com", "0193173906abcd", null);
-
-    }
-
-
 
 }

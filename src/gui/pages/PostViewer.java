@@ -368,8 +368,6 @@ public class PostViewer extends JPanel {
         rightPanel.setBackground(Color.GRAY);
         rightPanel.add(commentDateLabel, BorderLayout.EAST);
 
-        // Add the rightPanel to the EAST of the topPanel
-
         commentPanel.add(topPanel, BorderLayout.NORTH);
         if (data.getUser().isAdmin || data.getUser().getId() == comment.getAuthorID()) {
             JButton deleteCommentButton = new JButton("Delete Comment");

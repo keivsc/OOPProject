@@ -245,12 +245,6 @@ public class Posts {
         }
     }
 
-    public static void main(String[] args) {
-        Posts posts = new Posts();
-        posts.newPost(1, "How I Defrauded the US Government", "HELLO WORLD");
-        posts.likePost(1, 1);
-    }
-
     private static List<Integer> parseStringToList(String input) {
         if (input == null || input.isEmpty()) {
             return new ArrayList<>();

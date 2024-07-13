@@ -13,6 +13,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -24,8 +25,9 @@ public class Profile extends JPanel {
     private final JButton nextButton;
     private final JLabel nextLabel;
     private int currentPage = 1;
-    private List<Integer> userPosts;
+    private List<Integer> userPosts = new ArrayList<>();
     private final int POSTS_PER_PAGE = 5;
+    private int totalPages;
 
     public Profile(JFrame parentFrame, Data data) {
         this.data = data;
@@ -62,7 +64,8 @@ public class Profile extends JPanel {
         prevButton.addActionListener((ActionEvent e) -> navigateResults(parentFrame, -1));
         paginationPanel.add(prevButton);
 
-        nextLabel = new JLabel("Page " + currentPage);
+        nextLabel = new JLabel("Page " + currentPage + " of "
+                + totalPages);
         nextLabel.setForeground(Color.WHITE);
         paginationPanel.add(nextLabel);
 
@@ -168,6 +171,7 @@ public class Profile extends JPanel {
         gbc.anchor = GridBagConstraints.FIRST_LINE_START;  // Ensure alignment to the top
 
         userPosts = data.Users().getPosts(user.getId());
+        this.totalPages = (int) Math.ceil((double) userPosts.size() / POSTS_PER_PAGE);
 
         if (!userPosts.isEmpty()) {
             JLabel postText = new JLabel("Your Posts"){{setFont(new Font("Arial", Font.BOLD, 15));}};
@@ -177,11 +181,11 @@ public class Profile extends JPanel {
             nextLabel.setText("Page " + currentPage + " of " + totalPages);
             nextLabel.getParent().setVisible(true);
 
-            for (int i = 0; i < Math.min(userPosts.size(), POSTS_PER_PAGE); i++) {
-                gbc.gridy++;  // Move to the next row for the next post panel
-                int postID = userPosts.get(i + (currentPage - 1) * POSTS_PER_PAGE);
+            for (int i = 0; i <= POSTS_PER_PAGE; i++) {
+                gbc.gridy++;
+                int postID = userPosts.get(i + (currentPage-1));
 
-                if (postID > 0) { // Only show posts with postID greater than 1
+                if (postID > 0) {
                     Post post = data.Posts().getPost(postID);
                     if (post != null) {
                         JPanel postPanel = createPostPanel(parentFrame, data, post);
@@ -255,9 +259,9 @@ public class Profile extends JPanel {
 
     private void updateNavigationButtons() {
         prevButton.setEnabled(currentPage > 1);
-        nextButton.setEnabled(userPosts.size() > currentPage * POSTS_PER_PAGE);
-        int totalPages = (int) Math.ceil((double) userPosts.size() / POSTS_PER_PAGE);
-        nextLabel.setText("Page " + currentPage + " of " + totalPages);
+        System.out.println(currentPage +" | "+ this.totalPages);
+        nextButton.setEnabled(currentPage < this.totalPages);
+        nextLabel.setText("Page " + currentPage + " of " + this.totalPages);
     }
 
     public static void main(String[] args) {
