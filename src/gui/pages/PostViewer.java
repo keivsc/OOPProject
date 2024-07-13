@@ -57,12 +57,14 @@ public class PostViewer extends JPanel {
                 public void actionPerformed(ActionEvent e) {
                     int response = JOptionPane.showConfirmDialog(null, "Are you sure you want to delete this post?", "Delete Post?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
                     if (response == JOptionPane.NO_OPTION) {return;}
-                    data.Posts().deletePost(post.getPostId());
-                    data.Users().deletePost(user.getId(), post.getPostId());
-                    data.Comments().DropTable(post.getPostId());
-                    parentFrame.setContentPane(new MainPanel(parentFrame, data, homePanelSupplier.get()));
-                    parentFrame.revalidate();
-                    parentFrame.repaint();
+                    else if (response == JOptionPane.YES_OPTION) {
+                        data.Posts().deletePost(post.getPostId());
+                        data.Users().deletePost(user.getId(), post.getPostId());
+                        data.Comments().DropTable(post.getPostId());
+                        parentFrame.setContentPane(new MainPanel(parentFrame, data, homePanelSupplier.get()));
+                        parentFrame.revalidate();
+                        parentFrame.repaint();
+                    }
                 }
             });
             topPanel.add(deletePostButton, BorderLayout.SOUTH);
@@ -376,11 +378,13 @@ public class PostViewer extends JPanel {
                 public void actionPerformed(ActionEvent e) {
                     int response = JOptionPane.showConfirmDialog(null, "Are you sure you want to delete this comment?", "Delete comment?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
                     if (response == JOptionPane.NO_OPTION) {return;}
-                    data.Comments().deleteComment(post.getPostId(), comment.getId());
-                    Supplier<JPanel> postRefresh = ()-> new MainPanel(parentFrame, data, new PostViewer(parentFrame, data, post));
-                    parentFrame.setContentPane(postRefresh.get());
-                    parentFrame.revalidate();
-                    parentFrame.repaint();
+                    else if (response == JOptionPane.YES_OPTION) {
+                        data.Comments().deleteComment(post.getPostId(), comment.getId());
+                        Supplier<JPanel> postRefresh = () -> new MainPanel(parentFrame, data, new PostViewer(parentFrame, data, post));
+                        parentFrame.setContentPane(postRefresh.get());
+                        parentFrame.revalidate();
+                        parentFrame.repaint();
+                    }
                 }
             });
             rightPanel.add(deleteCommentButton, BorderLayout.SOUTH);
