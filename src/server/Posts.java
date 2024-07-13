@@ -72,6 +72,7 @@ public class Posts {
             ResultSet rs = this.headersTable.runQuery(
                     "SELECT *, " +
                             "       CASE " +
+                            "           WHEN dislikes = 0 THEN CAST(likes AS FLOAT) " +
                             "           WHEN likes = 0 THEN -CAST(dislikes AS FLOAT) " +
                             "           ELSE CAST(likes AS FLOAT) / dislikes " +
                             "       END AS rating " +
