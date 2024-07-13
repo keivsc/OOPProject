@@ -156,6 +156,15 @@ public class Posts {
         }
     }
 
+    public int getTotalPosts(String query){
+        try {
+            ResultSet rs = this.headersTable.runQuery("SELECT COUNT(*) FROM PostsHeaders WHERE LOWER(postTItle) LIKE LOWER('%" + query + "%');");
+            return rs.next() ? rs.getInt(1) : 0;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public int likePost(int postID, int authorID) {
         Value newValue = new Value();
         newValue.addItem("likes", "likes + 1");

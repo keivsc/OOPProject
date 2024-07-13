@@ -60,12 +60,12 @@ public class Home extends JPanel {
         prevButton.addActionListener((ActionEvent e) -> navigateResults(parentFrame, -1));
         paginationPanel.add(prevButton);
 
-        nextLabel = new JLabel("Page " + (currentPage ));
+        nextLabel = new JLabel("Page " + (currentPage) +" of " + (int) Math.ceil(this.data.Posts().getTotalPosts("")/10.0));
         nextLabel.setForeground(Color.WHITE);
         paginationPanel.add(nextLabel);
 
         nextButton = new JButton("Next");
-        nextButton.setEnabled(false);
+        nextButton.setEnabled(topPosts.size() == 11);
         nextButton.addActionListener((ActionEvent e) -> navigateResults(parentFrame, 1));
         paginationPanel.add(nextButton);
 
@@ -190,8 +190,8 @@ public class Home extends JPanel {
 
     private void updateNavigationButtons() {
         prevButton.setEnabled(currentPage > 1);
-        nextButton.setEnabled(topPosts.size() == 11);// Check if there is more than 10 results
-        nextLabel.setText("Page " + (currentPage));
+        nextButton.setEnabled(topPosts.size() == 11);
+        nextLabel.setText("Page " + (currentPage) +" of " + (int) Math.ceil(this.data.Posts().getTotalPosts("")/10.0));
     }
 
     public static void main(String[] args) {

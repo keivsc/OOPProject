@@ -43,13 +43,13 @@ public class PostViewer extends JPanel {
         setLayout(new BorderLayout());
         setBackground(Color.GRAY);
 
-        JPanel mainContentPanel = createMainContentPanel();
+        JScrollPane mainContentPanel = createMainContentPanel();
         JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.setBackground(Color.DARK_GRAY);
         topPanel.add(createInfoPanel(), BorderLayout.CENTER);
         topPanel.add(createTopLeftPanel(parentFrame), BorderLayout.WEST);
         topPanel.add(createButtonPanel("▲", "like", "▼", "dislike"), BorderLayout.EAST);
-        if (data.getUser().isAdmin) {
+        if (data.getUser() != null && data.getUser().isAdmin) {
             Supplier<JPanel> homePanelSupplier = () -> new Home(parentFrame, data);
             JButton deletePostButton = new JButton("Delete Post");
             deletePostButton.addActionListener(new ActionListener() {
@@ -164,7 +164,7 @@ public class PostViewer extends JPanel {
         repaint();
     }
 
-    private JPanel createMainContentPanel() {
+    private JScrollPane createMainContentPanel() {
         JPanel mainContentPanel = new JPanel(new GridBagLayout());
         mainContentPanel.setBackground(Color.GRAY);
 
@@ -184,19 +184,15 @@ public class PostViewer extends JPanel {
         gbc.gridy++;
         gbc.weighty = 0.0;
         mainContentPanel.add(createTitledPanel("Add Comment", createCommentInputPanel(data.getUser()), Color.WHITE), gbc);
-
-        return mainContentPanel;
+        JScrollPane scrollPane = new JScrollPane(mainContentPanel);
+        return scrollPane;
     }
 
     private JPanel createTitledPanel(String title, JPanel panel, Color borderColor) {
-        panel.setBorder(createTitledBorder(borderColor, title));
+        TitledBorder titledBorder = BorderFactory.createTitledBorder(BorderFactory.createLineBorder(borderColor), title);
+        titledBorder.setTitleColor(borderColor);
+        panel.setBorder(titledBorder);
         return panel;
-    }
-
-    private TitledBorder createTitledBorder(Color color, String title) {
-        TitledBorder titledBorder = BorderFactory.createTitledBorder(BorderFactory.createLineBorder(color), title);
-        titledBorder.setTitleColor(color);
-        return titledBorder;
     }
 
     private JPanel createCommentsPanel() {
@@ -370,12 +366,12 @@ public class PostViewer extends JPanel {
         JPanel rightPanel = new JPanel();
         rightPanel.setLayout(new BorderLayout());
         rightPanel.setBackground(Color.GRAY);
-        rightPanel.add(commentDateLabel, BorderLayout.NORTH);
+        rightPanel.add(commentDateLabel, BorderLayout.EAST);
 
         // Add the rightPanel to the EAST of the topPanel
 
         commentPanel.add(topPanel, BorderLayout.NORTH);
-        if (data.getUser().isAdmin) {
+        if (data.getUser().isAdmin || data.getUser().getId() == comment.getAuthorID()) {
             JButton deleteCommentButton = new JButton("Delete Comment");
             deleteCommentButton.addActionListener(new ActionListener() {
                 @Override

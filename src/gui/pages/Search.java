@@ -222,8 +222,8 @@ public class Search extends JPanel {
 
     private void updateNavigationButtons() {
         prevButton.setEnabled(currentPage > 1);
-        nextButton.setEnabled(searchResults.size() == 11); // Check if there is more than 10 results
-        nextLabel.setText("Page " + (currentPage));
+        nextButton.setEnabled(searchResults.size() == 11);
+        nextLabel.setText("Page " + (currentPage) +" of " + (int) Math.ceil(this.data.Posts().getTotalPosts(this.searchArea.getText())/10.0));
     }
 
     private void resetPaginationPanel() {
