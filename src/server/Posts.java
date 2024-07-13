@@ -70,7 +70,11 @@ public class Posts {
         List<Post> posts = new ArrayList<>();
         try {
             ResultSet rs = this.headersTable.runQuery(
-                    "SELECT *, (CAST(likes AS FLOAT) / dislikes) AS rating " +
+                    "SELECT *, " +
+                            "       CASE " +
+                            "           WHEN likes = 0 THEN -CAST(dislikes AS FLOAT) " +
+                            "           ELSE CAST(likes AS FLOAT) / dislikes " +
+                            "       END AS rating " +
                             "FROM PostsHeaders " +
                             "ORDER BY rating DESC " +
                             "LIMIT 11 " +
